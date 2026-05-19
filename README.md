@@ -2,7 +2,19 @@
 
 ## The link to the common folder is [here](https://drive.google.com/drive/folders/1vy685r2IYYLLrJJtexPPP0kG4qTNNphn?usp=sharing).
 
+### Arturo Olivares Update on 19.05.2026
 
+Regarding my investigation on how to communicate the computer with the Arduinos.
+- I have found [this tutorial on how to use Python as a MQTT client](https://www.emqx.com/en/blog/how-to-use-mqtt-in-python) and [another one on how to use MQTT with Arduino](https://docs.arduino.cc/tutorials/uno-wifi-rev2/uno-wifi-r2-mqtt-device-to-device/). Both mention that there are several MQTT brokers available in the internet for free.
+
+
+We should include in our presentation the following aspects to see what to the teachers think about it:
+- Using MQTT for the communication between the computer and the Arduinos.
+- Arduino and WiFi. Which option do they prefer.
+- Usual and common electronic components (breadboard, wires, resistors, etc.) are not ncluded in the Part List, should we include them or not?
+- Which chair are we going to use?
+- Which sensor are we going to use to detect the movement of the legs? A PIR? I do not know if it has enough precision to detect the movement of the legs in such a short distance.
+- Are the pressure sensors going to be enough, or will they always be saturated? (0.2-20 N range). Covering them with some foam or something like that could help to avoid saturation? If not, which other sensor could we use to detect the posture of the user?
 
 
 
@@ -12,101 +24,18 @@
 
 
 
-### **# Part List is Done!**
+Part List is Done!
 
+Two versions have been prepared:
+1. Original Version
+    - 2 × Arduino Uno boards
+    - 2 × ESP8266 Wi-Fi modules
+2. Alternative ESP32 Version
+    - 2 × ESP32 Development Boards
 
+Both options are viable, so the teachers can choose which one they prefer.
 
-#### **Hello everyone,**
-
-
-
-I have prepared two versions of the part list for our Smart Chair project.
-
-
-
-\## 1. Original Version
-
-
-
-This version follows Arturo’s original component list:
-
-
-
-\* 2 × Arduino Uno boards
-
-\* 2 × ESP8266 Wi-Fi modules
-
-
-
-\## 2. Alternative ESP32 Version
-
-
-
-In this version, the two Arduino boards and the two separate Wi-Fi modules are replaced by:
-
-
-
-\* 2 × ESP32 Development Boards
-
-
-
-Since the ESP32 already includes built-in Wi-Fi, this reduces cost and simplifies the hardware setup.
-
-
-
-Please review both files and decide which version we would like to submit to the instructors.
-
-
-
-## \## Request to Arturo
-
-
-
-Arturo, could you please:
-
-
-
-\* Open each product link.
-
-\* Verify that the link opens the correct product page.
-
-\* Check that the selected product matches the part name and model description.
-
-\* Confirm that the selected components are technically suitable for our project.
-
-\* Let us know which of the two versions you recommend.
-
-
-
-Once we agree on the preferred version, we can remove the other file.
-
-
-
-\## Notes
-
-
-
-\* The file names have been updated to match our group name.
-
-\* The comments included in the university template have been taken into account.
-
-\* Please let me know if any component, price, or link should be corrected.
-
-
-
-Thank you!
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-### Meeting on Sunday, May 17th:
+### Meeting on 17.05.2026
 
 #### What exactly are we going to do?
 
