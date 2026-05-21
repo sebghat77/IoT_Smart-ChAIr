@@ -2,6 +2,24 @@
 
 ## The link to the common folder is [here](https://drive.google.com/drive/folders/1vy685r2IYYLLrJJtexPPP0kG4qTNNphn?usp=sharing).
 
+### Michael Breyer Update 21.05.2026
+
+Regarding my search for measuring the user's posture I came across the following papers, that used similar approaches that we could build on: 
+
+1. Paper [Destreza et al., 2023]: Sitting posture analysis using pressure sensors and camera based motion tracking (https://www.researchgate.net/publication/375111470_Sitting_Posture_Notification_and_Monitoring_System_A_sensor_application)
+-> Overall interesting, because of build description. Basically using same components/sensors as us. We could try retaking the approach using a servo-mounted LiDAR instead of a camera for 2D back posture analysis.
+   Also interesting ideas for user notification, e.g. notification straight to your laptop. 
+
+2. Paper [Pistolesi et al., 2024]: Sitting posture analysis using 2D LiDAR scans of leg (movements) + Automation of posture recognition
+(https://www.researchgate.net/publication/380789717_A_LiDAR-based_Recommendation_System_to_Improve_Sitting_Posture_Respecting_Privacy) 
+-> Very well designed posture vizualization process, especially regarding posture over time (How long the user was seated in a certain position and how it may effect them).
+   Paper makes the case, to use LiDAR instead of cameras in order to protect user privacy.  
+
+3. Paper [Odesola et al., 2024]: Meta-Review of already used approaches in analysing sitting posture
+(https://pmc.ncbi.nlm.nih.gov/articles/PMC11086066/)
+-> Great overview of approaches other researchers already took and what sensor data they used. Chapter 4.3 is especially interesting as it names papers also using the IoT approach. Maybe we could gather some inspiration on what approach to finally take for our pitch! 
+
+
 ### Arturo Olivares Update on 19.05.2026
 
 Regarding my investigation on how to communicate the computer with the Arduinos.
@@ -46,6 +64,7 @@ Both options are viable, so the teachers can choose which one they prefer.
     * Pressure sensors to detect the posture of the user.
     * Measure the distance from the chair to your head.
     * Measure the movement in front of the chair to detect if you are moving the legs or not.
+
   * In the Table:
 
     * Measure the distance from the computer to your head.
