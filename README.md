@@ -2,7 +2,7 @@
 
 ## The link to the common folder is [here](https://drive.google.com/drive/folders/1vy685r2IYYLLrJJtexPPP0kG4qTNNphn?usp=sharing).
 
-### Michael Breyer Update 21.05.2026
+### Michael Breyer Update on 21.05.2026
 
 Regarding my search for measuring the user's posture I came across the following papers, that used similar approaches that we could build on: 
 
