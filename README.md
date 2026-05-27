@@ -90,8 +90,8 @@ Both options are viable, so the teachers can choose which one they prefer.
 
 ### Task to be split:
 
-* **Atena** (28/05): Finding the pieces and prepare the Part List for the project
-* **Sebghat** (22/05): Preparing the slides for the Pitch
+* **Sebghat** (22/05): Finding the pieces and prepare the Part List for the project
+* **Atena** (28/05): Preparing the slides for the Pitch
 * **Michael** (28/05): How to measure if a user is well seated or not with the information from the sensors.
 * **Arturo** (28/05): How to communicate your computer with both Arduinos, process that information and send the activation of the Buzzer to one of them.
 
