@@ -1,20 +1,36 @@
+CONNECTIONS: 
 
+The VL6180X sensor connects to the ESP32 as follows:
+VCC  -> 3.3V
+GND  -> GND
+SCL  -> GPIO 22
+SDA  -> GPIO 21
+  
+Note: The VL6180X runs on 3.3V only - connecting it to 5V will damage the sensor.
 
+ISSUES DURING TESTING: 
 
+- Naming conflict with ESP32 internal functions: 
+  Our variable "timerStart" conflicted with the ESP32's internal timerStart() function defined in esp32-hal-timer.h, causing a compilation error. 
+  The fix was to rename our variable to "alertTimerStart" to avoid the conflict. 
+  When working with ESP32, reserved timer-related names like timerStart, timerStop, timerRead, and timerWrite must be avoided.
 
+- Incorrect sensor initialization:
+  The code initially used vl.begin() to initialize the sensor, which does not exist in the VL6180X library. The correct initialization sequence is:
+      sensor.init();
+      sensor.configureDefault();
+      sensor.setTimeout(500);
 
+- Wrong API methods and error checking: 
+  readRange() and readRangeStatus() were used, along with the non-existent constant VL6180X_ERROR_NONE. 
+  The correct approach is readRangeSingleMillimeters() for distance readings and timeoutOccurred() for error checking.
 
+- I2C pin initialization: 
+  On the ESP32, I2C pins are not set automatically - Wire.begin(SDA_PIN, SCL_PIN) must be called explicitly before initializing the sensor, 
+  otherwise the sensor will not be detected on the bus.
 
-
-
-
-
-
-
-
-
-
-
+- * Breadboard to small*: 
+  While testing I found out that one of our breadboard is to slim for our ESP32, resulting in only one side being open to put pins in
 
 
 #include <Wire.h>
