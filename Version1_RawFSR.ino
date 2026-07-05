@@ -10,7 +10,7 @@
 const int seatPins[4] = {34, 35, 32, 33};
 
 // ---------- Backrest FSR Pins ----------
-const int backPins[2] = {36, 39};
+const int backPins[2] = {25, 26};
 
 
 //==================================================
