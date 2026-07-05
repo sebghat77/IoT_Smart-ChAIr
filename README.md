@@ -27,7 +27,7 @@ These pins are used throughout the FSR implementation.
 
 I implemented and tested the FSR pressure sensor system for the Smart Chair.
 
-The first step was to connect and test a single FSR sensor with the ESP32 using a voltage divider circuit. One of the main challenges was establishing a stable electrical connection because the jumper wires did not fit the FSR terminals securely. After replacing the wiring with more suitable jumper wires, the sensor readings became stable.
+The first step was to connect and test a single FSR sensor with the ESP32 using a voltage divider circuit. During testing, we faced a practical issue: although the sensor worked correctly, the very small FSR terminals made it difficult to establish a stable connection using jumper wires. The wires were easily disconnected while testing, which made the process inconvenient. For the final Smart Chair implementation, each FSR should be soldered to wires to ensure a secure and reliable electrical connection when mounted on the chair.
 
 After successfully testing one sensor, all six FSR sensors were connected and verified individually.
 
