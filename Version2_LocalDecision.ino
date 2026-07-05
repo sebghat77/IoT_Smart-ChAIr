@@ -14,8 +14,8 @@ const int seatFSR4 = 33;   // Back Right
 
 
 // ---------- Backrest FSR Sensors ----------
-const int backFSR1 = 36;   // Backrest Left / Upper
-const int backFSR2 = 39;   // Backrest Right / Lower
+const int backFSR1 = 25;   // Backrest Left / Upper
+const int backFSR2 = 26;   // Backrest Right / Lower
 
 
 // ---------- Configuration ----------
