@@ -2,6 +2,107 @@
 
 ## The link to the common folder is [here](https://drive.google.com/drive/folders/1vy685r2IYYLLrJJtexPPP0kG4qTNNphn?usp=sharing).
 
+### Sebghat Yarzada Update on 05.07.2026
+
+# FSR Sensor Implementation
+
+## ESP32 Pin Assignment
+
+For the current ESP32 board, the following GPIO pins have been reserved for the six FSR sensors:
+
+| Sensor | GPIO Pin |
+|--------|----------|
+| Seat Front Left | GPIO34 |
+| Seat Front Right | GPIO35 |
+| Seat Back Left | GPIO32 |
+| Seat Back Right | GPIO33 |
+| Backrest Left | GPIO25 |
+| Backrest Right | GPIO26 |
+
+These pins are used throughout the FSR implementation.
+
+---
+
+## FSR Sensor Development
+
+I implemented and tested the FSR pressure sensor system for the Smart Chair.
+
+The first step was to connect and test a single FSR sensor with the ESP32 using a voltage divider circuit. During testing, we faced a practical issue: although the sensor worked correctly, the very small FSR terminals made it difficult to establish a stable connection using jumper wires. The wires were easily disconnected while testing, which made the process inconvenient. For the final Smart Chair implementation, each FSR should be soldered to wires to ensure a secure and reliable electrical connection when mounted on the chair.
+
+After successfully testing one sensor, all six FSR sensors were connected and verified individually.
+
+The ESP32 reads the output of each FSR sensor as an **ADC value (0–4095)**.
+
+Although it is technically possible to convert these ADC values into an estimated physical pressure (for example, in **kPa**) by performing a proper calibration procedure, this is **not required for our current project**.
+
+Our objective is not to measure the user's exact body pressure. Instead, we only need to compare the pressure distribution between different sensors in order to evaluate the sitting posture.
+
+Therefore, using the raw ADC values is sufficient for our posture detection algorithm and keeps the implementation simpler.
+
+---
+
+# Version 1 – Raw FSR Data Acquisition
+
+This version follows Arturo's proposed architecture.
+
+The function reads all six FSR sensors and stores their ADC readings in an array.
+
+No posture decision is made in this version.
+
+The purpose of this implementation is simply to provide raw sensor data that can later be processed by a higher-level decision algorithm.
+
+This design allows any future algorithm to analyze all sensor values together before making a posture decision.
+
+---
+
+# Version 2 – Independent Local Decision
+
+This version implements local decision making for the FSR sensors.
+
+Two independent functions are used:
+
+- **evaluateSeatPosture()**
+- **evaluateBackrestPosture()**
+
+Each function is responsible for its own sensor group and returns only:
+
+- `true`
+- `false`
+
+### Seat Logic
+
+The seat function evaluates the four seat FSR sensors.
+
+The comparison is performed as follows:
+
+- Front Left ↔ Front Right
+- Back Left ↔ Back Right
+
+The front sensors are **not** compared with the back sensors because the thighs and hips naturally apply different pressure on the seat.
+
+A percentage-based tolerance is used to determine whether each sensor pair is balanced.
+
+### Backrest Logic
+
+The backrest function evaluates the two backrest FSR sensors.
+
+If both sensors detect pressure above the defined threshold, the function returns `true`; otherwise, it returns `false`.
+
+---
+
+# My Recommendation
+
+In my opinion, **Version 2** is the better architecture for this project.
+
+Each sensor group performs its own local evaluation and returns a simple Boolean result.
+
+Later, a final decision function can combine these Boolean outputs together with the ToF sensors, PIR sensor, timing logic, and buzzer.
+
+This modular design makes the software easier to understand, debug, maintain, and extend as the project grows.
+
+
+___________________________________________________________________________________________________________________________________________________________________
+
 ### Michael Breyer Update on 21.05.2026
 
 Regarding my search for measuring the user's posture I came across the following papers, that used similar approaches that we could build on: 
