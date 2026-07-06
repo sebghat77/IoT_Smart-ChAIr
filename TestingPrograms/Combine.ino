@@ -281,6 +281,7 @@ void setup() {
 
 void loop() {
   int validAlerts = countValidAlerts();
+  processNumberOfAlerts(validAlerts);
 
   delay(1000);
 }
