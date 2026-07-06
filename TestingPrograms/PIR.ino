@@ -33,7 +33,6 @@ I have encountered some issues with the PIR sensor.
 
 #define PIR_PIN 13
 #define PIR_WARMUP_TIME 15000UL // Time in milliseconds for the PIR sensor to stabilize after powering up
-bool lastMovementState = false;
 
 void setup() {
   Serial.begin(9600);       // Speed of the serial communication
