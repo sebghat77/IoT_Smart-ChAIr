@@ -1,9 +1,9 @@
 #include <WiFi.h>
 
-const char* ssid = "X";
+const char* ssid = "Arturo’s iPhone";
 const char* password = "X";
 
-const char* host = "X"; 
+const char* host = "172.20.10.4"; 
 const int port = 1883;
 
 void setup() {

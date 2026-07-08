@@ -10,16 +10,21 @@
  * 3. See the assigned IP address of your ESP32 in the Serial Monitor
  * 4. sudo ufw allow from X to any port 1883 proto tcp
  * 5. sudo ufw reload
+ * 6. sudo iptables -F
+sudo iptables -X
+sudo iptables -t nat -F
+sudo iptables -t nat -X
+sudo nft flush ruleset 2>/dev/null
  */
 
 // 1. Configuración de tu red WiFi
-const char* ssid = "X";
+const char* ssid = "Arturo’s iPhone";
 const char* password = "X";
 
 // 2. Configuración del Broker MQTT (Tu Mac)
 // IMPORTANTE: Aquí NO puedes usar "localhost". Debes poner la IP local de tu Mac 
 // (ej. "192.168.1.15"). La puedes averiguar en la terminal de tu Mac con: ipconfig getifaddr en0
-const char* mqtt_broker = "X"; 
+const char* mqtt_broker = "172.20.10.4"; 
 const int mqtt_port = 1883;
 const char* topic = "casa/sala/temperatura";
 
