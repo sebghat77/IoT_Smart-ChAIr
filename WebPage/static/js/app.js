@@ -52,13 +52,20 @@ socket.on('update_chair', function(data) {
     } 
     else if (data.topic === "sensors/back/data") {
         idPrefix = "back";
-        // Actualización de valores numéricos del respaldo
+        // Actualiza el número de presión
         document.getElementById('v-back-up').innerText = data.raw_data.up;
         document.getElementById('v-back-low').innerText = data.raw_data.low;
         
-        // Sincronizar colores de los nodos del respaldo
         applyStateToNodes(['node-back-up', 'node-back-low'], data.state);
     } 
+    else if (data.topic === "sensors/distance/data") {
+        idPrefix = "distance";
+        // Actualiza el número de distancia ToF
+        document.getElementById('v-dist-up').innerText = data.raw_data.up;
+        document.getElementById('v-dist-low').innerText = data.raw_data.low;
+        
+        applyStateToNodes(['node-dist-up', 'node-dist-low'], data.state);
+    }
     else if (data.topic === "sensors/movement/data") {
         idPrefix = "movement";
         const isMotion = data.raw_data.movement_detected;
@@ -70,16 +77,7 @@ socket.on('update_chair', function(data) {
         // Limpiamos estilos de color previos y la clase de parpadeo
         pirBox.classList.remove('state-ok', 'state-warning', 'state-alert', 'pir-alert');
         
-        if (data.state === "OK") {
-            pirBox.style.backgroundColor = "rgba(46, 204, 113, 0.7)";
-        } 
-        else if (data.state === "WARNING") {
-            pirBox.style.backgroundColor = "rgba(243, 156, 18, 0.7)";
-        } 
-        else if (data.state === "ALERT") {
-            pirBox.style.backgroundColor = "rgba(231, 76, 60, 0.8)";
-            pirBox.classList.add('pir-alert'); // Activa el parpadeo
-        }
+        applyStateToNodes(['node-pir'], data.state);
     }
 
     // 2. Actualización de las tarjetas principales del Dashboard superior

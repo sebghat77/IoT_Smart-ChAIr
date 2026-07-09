@@ -15,7 +15,8 @@ PORT = 1883
 TOPICS = [
     "sensors/seat/data",
     "sensors/back/data",
-    "sensors/movement/data"
+    "sensors/movement/data",
+    "sensors/distance/data"
 ]
 
 def on_connect(client, userdata, flags, rc, properties=None):

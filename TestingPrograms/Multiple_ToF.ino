@@ -3,8 +3,8 @@
 
 #define SCL_PIN 22
 #define SDA_PIN 21
-#define XSHUT_SENSOR1 25
-#define XSHUT_SENSOR2 26
+#define XSHUT_SENSOR1 17
+#define XSHUT_SENSOR2 16
 #define BUZZER_PIN 19
 #define DEBUGGING
 

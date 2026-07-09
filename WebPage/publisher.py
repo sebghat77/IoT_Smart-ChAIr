@@ -1,154 +1,105 @@
 import time
 import json
+import random
 import paho.mqtt.client as mqtt
 
-# ------- Configuración MQTT (Ajustada a tu Arduino) -------
-BROKER = "localhost"  # IP de tu broker
+# ------- Configuración MQTT -------
+BROKER = "localhost"  # Cambiar por la IP del Broker si es necesario
 PORT = 1883
 SEAT_TOPIC = "sensors/seat/data"
 BACK_TOPIC = "sensors/back/data"
 MOVEMENT_TOPIC = "sensors/movement/data"
+DISTANCE_TOPIC = "sensors/distance/data"
 
-MQTT_PUBLISH_INTERVAL = 2.0  # Cada 2 segundos
-MIN_WARNING_DURATION = 5.0   # 5 segundos para pasar de WARNING a ALERT
+MQTT_PUBLISH_INTERVAL = 4.0  # Publicación estricta cada 2 segundos
 
-# Umbrales lógicos del ESP32
-FSR_THRESHOLD = 500
-FSR_BALANCE_TOLERANCE = 20
-
-# Estados de alerta (Réplica del Enum de C++)
+# Estados del sistema
 OK_STATE = "OK"
 WARNING_STATE = "WARNING"
 ALERT_STATE = "ALERT"
 
-# Variables de control de tiempo para las alertas
-start_seat_warning_time = 0
-start_back_warning_time = 0
-start_movement_warning_time = 0
-
-# Inicializar cliente MQTT con la API v2
+# Inicializar cliente MQTT
 client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
 
-print(f"🔄 Conectando al broker {BROKER}...")
+print(f"🔄 Conectando al broker MQTT en {BROKER}:{PORT}...")
 try:
     client.connect(BROKER, PORT, 60)
     client.loop_start()
-    print("¡Conectado al Broker con éxito!")
+    print("✅ ¡Conectado al Broker con éxito!")
 except Exception as e:
     print(f"❌ No se pudo conectar al broker: {e}")
     exit(1)
 
-# ------- Funciones de Lógica de Negocio -------
-
-def are_fsr_balanced(val1, val2):
-    if val1 < FSR_THRESHOLD or val2 < FSR_THRESHOLD:
-        return False
-    average = (val1 + val2) / 2.0
-    if average < FSR_THRESHOLD:
-        return False
-    difference = abs(val1 - val2)
-    allowed_difference = average * FSR_BALANCE_TOLERANCE / 100.0
-    return difference <= allowed_difference
-
-def update_alert_state(is_ok, start_warning_time, current_time):
-    """Réplica exacta de la función updateAlertState de Arduino"""
-    if is_ok:
-        return OK_STATE, 0
-    else:
-        if start_warning_time == 0:
-            start_warning_time = current_time  # Guarda el momento exacto del fallo
-        
-        if (current_time - start_warning_time) >= MIN_WARNING_DURATION:
-            return ALERT_STATE, start_warning_time
-        else:
-            return WARNING_STATE, start_warning_time
-
-# ------- Bucle Principal Simulado -------
-
-last_publish_time = time.time()
-start_simulation_time = time.time()
+print("🚀 Iniciando bucle de envío continuo de datos (Ctrl+C para detener)...")
 
 try:
     while True:
-        current_time = time.time()
-        elapsed = current_time - start_simulation_time
+        # --- 1. SEAT DATA (Combinación aleatoria simple) ---
+        seat_state = random.choice([OK_STATE, WARNING_STATE, ALERT_STATE])
+        payload_seat = {
+            "state": seat_state,
+            "fl": random.randint(550, 750) if seat_state == OK_STATE else random.randint(100, 450),
+            "fr": random.randint(550, 750),
+            "bl": random.randint(550, 750),
+            "br": random.randint(550, 750)
+        }
 
-        # --- SIMULACIÓN DE SENSORES EN TIEMPO REAL ---
-        # El ciclo cambia de estado de forma automática cada 15 segundos
-        if elapsed < 15:
-            # Estado 1: Postura correcta
-            seat_FL_val, seat_FR_val = 600, 610   # Equilibrado
-            seat_BL_val, seat_BR_val = 700, 690   # Equilibrado
-            back_UP_val, back_LOW_val = 800, 850  # Presión correcta
-            pir_val = False                       # Sin movimiento
-            print("\n--- [Simulación] Postura correcta y calma ---")
-        elif elapsed < 30:
-            # Estado 2: Asiento desequilibrado en la parte delantera
-            seat_FL_val, seat_FR_val = 800, 300   # DESEQUILIBRADO
-            seat_BL_val, seat_BR_val = 700, 690 
-            back_UP_val, back_LOW_val = 800, 850
-            pir_val = False
-            print("\n--- [Simulación] Asiento desequilibrado (WARNING -> ALERT) ---")
-        elif elapsed < 45:
-            # Estado 3: Respaldo libre y mucho movimiento
-            seat_FL_val, seat_FR_val = 600, 610
-            seat_BL_val, seat_BR_val = 700, 690
-            back_UP_val, back_LOW_val = 200, 150  # Sin apoyar espalda
-            pir_val = True                        # Movimiento detectado
-            print("\n--- [Simulación] Sin apoyar espalda y con movimiento continuo ---")
+        # --- 2. MOVEMENT DATA (Combinación aleatoria simple) ---
+        movement_state = random.choice([OK_STATE, WARNING_STATE, ALERT_STATE])
+        payload_movement = {
+            "state": movement_state,
+            "movement_detected": True if movement_state in [WARNING_STATE, ALERT_STATE] else False
+        }
+
+        # --- 3. LOGICA EXCLUSIVA: BACK VS DISTANCE ---
+        # Decidimos de forma aleatoria cuál de los dos va a estar en "OK"
+        # Esto asegura que si uno falla, el otro obligatoriamente se mantiene a salvo.
+        if random.choice([True, False]):
+            # Caso A: Espalda está OK, Distancia puede fallar
+            back_state = OK_STATE
+            distance_state = random.choice([WARNING_STATE, ALERT_STATE])
         else:
-            # Reiniciar la línea de tiempo de la simulación
-            start_simulation_time = time.time()
-            continue
+            # Caso B: Distancia está OK, Espalda puede fallar
+            distance_state = OK_STATE
+            back_state = random.choice([WARNING_STATE, ALERT_STATE])
 
-        # --- EVALUACIÓN DE REGLAS DE ARDUINO ---
-        seat_ok = are_fsr_balanced(seat_FL_val, seat_FR_val) and are_fsr_balanced(seat_BL_val, seat_BR_val)
-        back_ok = (back_UP_val > FSR_THRESHOLD) and (back_LOW_val > FSR_THRESHOLD)
-        movement_ok = not pir_val
+        # Generamos valores coherentes para el respaldo según su estado dictaminado
+        if back_state == OK_STATE:
+            up_press, low_press = random.randint(600, 900), random.randint(600, 900)
+        else:
+            up_press, low_press = random.randint(100, 400), random.randint(100, 400)
 
-        # --- ACTUALIZACIÓN DE ESTADOS TEMPORALES ---
-        seatState, start_seat_warning_time = update_alert_state(seat_ok, start_seat_warning_time, current_time)
-        backState, start_back_warning_time = update_alert_state(back_ok, start_back_warning_time, current_time)
-        movementState, start_movement_warning_time = update_alert_state(movement_ok, start_movement_warning_time, current_time)
+        payload_back = {
+            "state": back_state,
+            "up": up_press,
+            "low": low_press
+        }
 
-        # Monitor serial simulado en consola
-        print(f"  [Estados actuales] Asiento: {seatState} | Respaldo: {backState} | Movimiento: {movementState}")
+        # Generamos valores coherentes para la distancia (ToF) según su estado dictaminado
+        if distance_state == OK_STATE:
+            up_dist, low_dist = random.randint(10, 30), random.randint(10, 30) # mm (Cerca)
+        else:
+            up_dist, low_dist = random.randint(150, 300), random.randint(150, 300) # mm (Lejos)
 
-        # --- PUBLICACIÓN MQTT EN FORMATO JSON (IDÉNTICO AL ESP32) ---
-        if current_time - last_publish_time >= MQTT_PUBLISH_INTERVAL:
-            last_publish_time = current_time
-            
-            print("  📤 Publicando JSONs estructurados vía MQTT...")
+        payload_distance = {
+            "state": WARNING_STATE,
+            "up": up_dist,
+            "low": low_dist
+        }
 
-            # 1. JSON del Asiento
-            payload_seat = {
-                "state": seatState,
-                "fl": seat_FL_val,
-                "fr": seat_FR_val,
-                "bl": seat_BL_val,
-                "br": seat_BR_val
-            }
-            client.publish(SEAT_TOPIC, json.dumps(payload_seat))
+        # --- 4. PUBLICACIÓN SIMULTÁNEA VÍA MQTT ---
+        print(f"\n📤 [{time.strftime('%H:%M:%S')}] Enviando ráfaga de datos:")
+        print(f"   Seat: {seat_state} | Back: {back_state} | Distance: {distance_state} | Move: {movement_state}")
+        
+        client.publish(SEAT_TOPIC, json.dumps(payload_seat))
+        client.publish(BACK_TOPIC, json.dumps(payload_back))
+        client.publish(MOVEMENT_TOPIC, json.dumps(payload_movement))
+        client.publish(DISTANCE_TOPIC, json.dumps(payload_distance))
 
-            # 2. JSON del Respaldo
-            payload_back = {
-                "state": backState,
-                "up": back_UP_val,
-                "low": back_LOW_val
-            }
-            client.publish(BACK_TOPIC, json.dumps(payload_back))
-
-            # 3. JSON de Movimiento
-            payload_movement = {
-                "state": movementState,
-                "movement_detected": pir_val
-            }
-            client.publish(MOVEMENT_TOPIC, json.dumps(payload_movement))
-
-        # Frecuencia de muestreo (1 segundo para evaluar las alertas de tiempo con precisión)
-        time.sleep(1) 
+        # Pausa estricta de 2 segundos antes de la siguiente combinación
+        time.sleep(MQTT_PUBLISH_INTERVAL)
 
 except KeyboardInterrupt:
-    print("\n👋 Deteniendo el simulador de la silla inteligente...")
+    print("\n👋 Deteniendo el publicador de pruebas de la silla...")
     client.loop_stop()
     client.disconnect()

@@ -24,6 +24,12 @@
             <div class="timestamp">Last Update:<br><span id="back-time">--:--:--</span></div>
         </div>
 
+        <div class="card" id="card-distance">
+            <h2>Backrest Distance</h2>
+            <div id="distance-state" class="status-badge">WAITING...</div>
+            <div class="timestamp">Last Update:<br><span id="distance-time">--:--:--</span></div>
+        </div>
+
         <div class="card" id="card-movement">
             <h2>Leg Movement</h2>
             <div id="movement-state" class="status-badge">WAITING...</div>
@@ -39,41 +45,43 @@
         <div class="chair-container">
             
             <div class="chair-backrest">
-                <div class="sensor-node" id="node-back-up" style="width: 85%;">
-                    Upper Back (UP)
-                    <span id="v-back-up">0</span>
+                
+                <div class="backrest-row">
+                    <div class="sensor-node sub-node" id="node-back-up">
+                        Upper Pres
+                        <span id="v-back-up">0</span>
+                    </div>
+                    <div class="sensor-node sub-node" id="node-dist-up">
+                        Upper Dist
+                        <span><span id="v-dist-up">0</span>mm</span>
+                    </div>
                 </div>
-                <div class="sensor-node" id="node-back-low" style="width: 85%;">
-                    Lower Back (LOW)
-                    <span id="v-back-low">0</span>
+
+                <div class="backrest-row">
+                    <div class="sensor-node sub-node" id="node-back-low">
+                        Lower Pres
+                        <span id="v-back-low">0</span>
+                    </div>
+                    <div class="sensor-node sub-node" id="node-dist-low">
+                        Lower Dist
+                        <span><span id="v-dist-low">0</span>mm</span>
+                    </div>
                 </div>
+
             </div>
 
             <div class="chair-seat">
-                <div class="sensor-node" id="node-seat-bl">
-                    Back Left (BL)
-                    <span id="v-seat-bl">0</span>
-                </div>
-                <div class="sensor-node" id="node-seat-br">
-                    Back Right (BR)
-                    <span id="v-seat-br">0</span>
-                </div>
-                <div class="sensor-node" id="node-seat-fl">
-                    Front Left (FL)
-                    <span id="v-seat-fl">0</span>
-                </div>
-                <div class="sensor-node" id="node-seat-fr">
-                    Front Right (FR)
-                    <span id="v-seat-fr">0</span>
-                </div>
+                <div class="sensor-node" id="node-seat-bl">Back Left (BL)<span id="v-seat-bl">0</span></div>
+                <div class="sensor-node" id="node-seat-br">Back Right (BR)<span id="v-seat-br">0</span></div>
+                <div class="sensor-node" id="node-seat-fl">Front Left (FL)<span id="v-seat-fl">0</span></div>
+                <div class="sensor-node" id="node-seat-fr">Front Right (FR)<span id="v-seat-fr">0</span></div>
             </div>
 
             <div class="chair-prop"></div>
             <div class="chair-base"></div>
 
             <div class="pir-box" id="node-pir">
-                PIR Sensor Activity:
-                <span id="v-pir">NO MOTION</span>
+                PIR Sensor Activity: <span id="v-pir">NO MOTION</span>
             </div>
         </div>
     </div>
