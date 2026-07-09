@@ -17,16 +17,32 @@
 #define FSR_BALANCE_TOLERANCE 20  // Allowed difference between paired sensors in percentage
 
 // --------- PIR Sensor ----------
-// TODO: Its FoV needs to be calibrated when the sensor is installed in its final position.
+// DONE: Its FoV needs to be calibrated when the sensor is installed in its final position.
 #define PIR_PIN 13
 #define WARMUP_TIME 15000UL // Time in milliseconds for sensors to stabilize after powering up
 
 // --------- Buzzer ----------
-// TODO: I do not know if that pin works, it needs to be tested
 #define BUZZER_PIN 18
 
 
 // --------- General Alert System ----------
+
+/**
+ * @brief Enum representing the state of an alert.
+ * 
+ * OK_STATE: No alert is active.
+ * PRE_ALERT_STATE: An alert condition has been detected, but it has not yet been active for the minimum duration required to be considered valid.
+ * VALID_ALERT_STATE: An alert condition has been detected and has been active for the minimum duration required to be considered valid.
+ */
+enum alertState {
+  OK_STATE = 0,
+  PRE_ALERT_STATE = 1,
+  VALID_ALERT_STATE = 2
+};
+alertState seatState     = OK_STATE;
+alertState backState     = OK_STATE;
+alertState movementState = OK_STATE;
+
 #define MIN_ALERT_DURATION 5*1000UL // Minimum duration in milliseconds for an alert to be considered valid
 unsigned long startSeatAlertTime      = 0;    // Time when the seat alert started
 unsigned long startBackAlertTime      = 0;    // Time when the backrest alert started
@@ -155,10 +171,9 @@ bool isMovementOK() {
   return !movementDetected;
 }
 
+
 /**
- * @brief Detects if an alert is valid.
- * 
- * It is valid if the condition has been continuously in a non-OK state for more than the minimum alert duration.
+ * @brief Updates the alert state based on the current condition and the time it has been active.
  * 
  * @param isOK True if the condition is OK, false if it is not OK.
  * @param startAlertTime Reference to the variable that stores the time when the alert started.
@@ -166,21 +181,41 @@ bool isMovementOK() {
  * 
  * @note It is really important to pass the startAlertTime variable by reference, as it needs to be updated.
  * 
- * @return true if the alert has been continuously active for more than the minimum duration.
+ * @see alertState
+ * 
+ * @return The updated alert state (OK_STATE, PRE_ALERT_STATE, or VALID_ALERT_STATE).
  */
-bool isAlertValid(bool isOK, unsigned long &startAlertTime, unsigned long currentTime) {
-  if (!isOK) {
-    if (startAlertTime == 0) {  // The alert has just started
-      startAlertTime = currentTime;
-    }
-
-    return (currentTime - startAlertTime >= MIN_ALERT_DURATION);
-
-  } else {
+alertState updateAlertState(bool isOK, unsigned long &startAlertTime, unsigned long currentTime) {
+  if (isOK) {
     startAlertTime = 0;
-    return false;
+    return OK_STATE;
+  } else {
+    if (startAlertTime == 0) {  
+      startAlertTime = currentTime; // The problem has just started, we record the start time
+    }
+    
+    if (currentTime - startAlertTime >= MIN_ALERT_DURATION) {
+      return VALID_ALERT_STATE;
+    } else {
+      return PRE_ALERT_STATE;
+    }
   }
 }
+
+
+String alertStateToString(alertState state) {
+  switch (state) {
+    case OK_STATE:
+      return "OK";
+    case PRE_ALERT_STATE:
+      return "PRE-ALERT";
+    case VALID_ALERT_STATE:
+      return "VALID ALERT";
+    default:
+      return "UNKNOWN STATE";
+  }
+}
+
 
 
 /**
@@ -195,12 +230,23 @@ int countValidAlerts() {
   unsigned long currentTime = millis();
   int totalAlerts = 0;
 
-  if (isAlertValid(isSeatPostureOK(), startSeatAlertTime,      currentTime))   totalAlerts++;
-  if (isAlertValid(isBackPostureOK(), startBackAlertTime,      currentTime))   totalAlerts++;
-  if (isAlertValid(isMovementOK(),    startMovementAlertTime,  currentTime))   totalAlerts++;
+  backState     = updateAlertState(isBackPostureOK(), startBackAlertTime,      currentTime);
+  seatState     = updateAlertState(isSeatPostureOK(), startSeatAlertTime,      currentTime);
+  movementState = updateAlertState(isMovementOK(),    startMovementAlertTime,  currentTime);
+
+  if (backState == VALID_ALERT_STATE)     totalAlerts++;
+  if (seatState == VALID_ALERT_STATE)     totalAlerts++;
+  if (movementState == VALID_ALERT_STATE) totalAlerts++;
 
   #ifdef DEBUGGING
-    Serial.print("Total valid alerts detected: ");
+    Serial.println("Current alert states: ");
+    Serial.print("\t- Backrest: ");
+    Serial.println(alertStateToString(backState));
+    Serial.print("\t- Seat: ");
+    Serial.println(alertStateToString(seatState));
+    Serial.print("\t- Movement: ");
+    Serial.println(alertStateToString(movementState));
+    Serial.print("\t- Total valid alerts: ");
     Serial.println(totalAlerts);
   #endif
 
@@ -290,7 +336,6 @@ void processNumberOfAlerts(int numAlerts) {
 
 void setup() {
   Serial.begin(115200);
-  delay(1000);
 
   pinMode(PIR_PIN, INPUT);
 
@@ -308,5 +353,5 @@ void loop() {
     Serial.println("===============================");
   #endif
 
-  delay(1000);
+  delay(100);
 }
