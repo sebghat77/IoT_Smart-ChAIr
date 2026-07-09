@@ -8,8 +8,8 @@
 #define SEAT_FSR_BR 33   // Back Right
 
 // ---------- Backrest FSR Sensors ----------
-#define BACK_FSR_UP 25   // Backrest Upper
-#define BACK_FSR_LOW 26   // Backrest Lower
+#define BACK_FSR_UP 36   // Backrest Upper
+#define BACK_FSR_LOW 39   // Backrest Lower
 
 // ---------- FSR Configuration ----------
 // TODO: These values need to be calibrated when the sensors are installed in their final positions.
@@ -27,13 +27,14 @@
 
 
 // --------- General Alert System ----------
-#define MIN_ALERT_DURATION 60*1000UL // Minimum duration in milliseconds for an alert to be considered valid
+#define MIN_ALERT_DURATION 5*1000UL // Minimum duration in milliseconds for an alert to be considered valid
 unsigned long startSeatAlertTime      = 0;    // Time when the seat alert started
 unsigned long startBackAlertTime      = 0;    // Time when the backrest alert started
 unsigned long startMovementAlertTime  = 0;    // Time when the movement alert started
 
 unsigned long lastBuzzerChange = 0;
 bool buzzerSounding = false;
+int lastNumAlerts = -1;
 
 
 /**
@@ -125,7 +126,7 @@ bool isBackPostureOK() {
     Serial.println("\t- Back Upper: " + String(back_UP_reading));
     Serial.println("\t- Back Lower: " + String(back_LOW_reading));
 
-    Serial.print("\t- Back balanced: ");
+    Serial.print("\t- Back pressed: ");
     Serial.println(back_pressed ? "TRUE" : "FALSE");
 
   #endif 
@@ -215,9 +216,23 @@ int countValidAlerts() {
  */
 void processNumberOfAlerts(int numAlerts) {
   unsigned long currentTime = millis();
+  
+  // Guardamos el estado anterior para detectar CUÁNDO cambia el modo
+  static int previousAlerts = -1;
+  static unsigned long lastBuzzerChange = 0;
+  static bool buzzerSounding = false;
+
+  // Si el usuario cambia el modo de alerta, reiniciamos el temporizador por completo
+  if (numAlerts != previousAlerts) {
+    previousAlerts = numAlerts;
+    lastBuzzerChange = currentTime;
+    buzzerSounding = false;
+    noTone(BUZZER_PIN);
+    if (numAlerts <= 0) return;
+  }
 
   if (numAlerts <= 0) {
-    noTone(BUZZZER_PIN);
+    noTone(BUZZER_PIN);
     buzzerSounding = false;
     return;
   }
@@ -228,37 +243,44 @@ void processNumberOfAlerts(int numAlerts) {
 
   switch (numAlerts) {
     case 1:
-      frequency = 1500;
+      frequency = 1000;
       noteDuration = 150;
-      silenceDuration = 1000;
+      silenceDuration = 3000;
       break;
 
     case 2:
-      frequency = 2400;
+      frequency = 1500;
       noteDuration = 250;
-      silenceDuration = 250;
+      // IMPORTANTE: 10ms es demasiado bajo, el pin no llega a estabilizarse.
+      // Usa 100ms para notar una ráfaga rápida diferenciada del case 1.
+      silenceDuration = 100; 
       break;
 
     case 3:
-      // Maximum alert: continuous sound with alternating frequencies
-      frequency = ((currentTime / 150) % 2 == 0) ? 3000 : 2000;
+      frequency = ((currentTime / 150) % 2 == 0) ? 1000 : 1500;
       noteDuration = 150;
       silenceDuration = 0;
       break;
   }
 
-  
-  // Before changing the buzzer state, the previous state must finish its duration.
+  // Ejecución de sonido continuo (Case 3)
+  if (silenceDuration == 0) {
+    buzzerSounding = true;
+    tone(BUZZER_PIN, frequency);
+    return; // Salimos para evitar procesar el código de abajo
+  }
+
+  // Gestión de tiempos (Case 1 y Case 2)
   unsigned long configuredInterval = buzzerSounding ? noteDuration : silenceDuration;
 
-  if (currentTime - lastBuzzerChange >= configuredInterval) { // Change can happen
-    lastBuzzerChange = currentTime;
+  if (currentTime - lastBuzzerChange >= configuredInterval) {
+    lastBuzzerChange = currentTime; // Guardamos el momento exacto del cambio
     buzzerSounding = !buzzerSounding;
 
-    if (buzzerSounding || silenceDuration == 0) {
-      tone(BUZZZER_PIN, frequency);
+    if (buzzerSounding) {
+      tone(BUZZER_PIN, frequency);
     } else {
-      noTone(BUZZZER_PIN);
+      noTone(BUZZER_PIN);
     }
   }
 }
@@ -282,10 +304,9 @@ void setup() {
 void loop() {
   int validAlerts = countValidAlerts();
   processNumberOfAlerts(validAlerts);
+  #ifdef DEBUGGING
+    Serial.println("===============================");
+  #endif
 
   delay(1000);
 }
-
-
-
-
