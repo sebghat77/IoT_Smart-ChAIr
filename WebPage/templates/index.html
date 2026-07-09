@@ -5,154 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart ChAIr</title>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    
-    <style>
-        :root {
-            --bg-color: #f4f6f9;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --color-ok: #2ecc71;
-            --color-pre: #f39c12;
-            --color-alert: #e74c3c;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h1 {
-            margin-bottom: 30px;
-            color: #2c3e50;
-        }
-
-        .dashboard {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 1000px;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 24px;
-            width: 260px;
-            text-align: center;
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .card h2 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            color: #7f8c8d;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            font-size: 1.5rem;
-            font-weight: bold;
-            padding: 10px 20px;
-            border-radius: 8px;
-            margin: 15px 0;
-            background-color: #eee;
-            color: #7f8c8d;
-            transition: all 0.3s ease;
-        }
-
-        .state-ok { background-color: rgba(46, 204, 113, 0.2); color: var(--color-ok); }
-        .state-warning { background-color: rgba(243, 156, 18, 0.2); color: var(--color-pre); }
-        .state-alert { 
-            background-color: rgba(231, 76, 60, 0.2); 
-            color: var(--color-alert); 
-            animation: pulse 1.5s infinite;
-        }
-
-        .timestamp {
-            font-size: 0.85rem;
-            color: #95a5a6;
-            margin-top: 15px;
-            border-top: 1px solid #ecf0f1;
-            padding-top: 10px;
-        }
-
-        /* --- Estilos del Botón de Insights y Panel de Debug --- */
-        .btn-insights {
-            background-color: #34495e;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-bottom: 20px;
-        }
-
-        .btn-insights:hover {
-            background-color: #2c3e50;
-        }
-
-        .debug-panel {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 900px;
-            width: 100%;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
-            font-family: 'Courier New', Courier, monospace;
-            display: none; /* Oculto por defecto */
-        }
-
-        .debug-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .debug-section {
-            background-color: #34495e;
-            padding: 15px;
-            border-radius: 8px;
-        }
-
-        .debug-section h3 {
-            margin-top: 0;
-            color: #f1c40f;
-            font-size: 1.1rem;
-            border-bottom: 1px solid #5d6d7e;
-            padding-bottom: 5px;
-        }
-
-        .debug-data {
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
@@ -166,7 +19,7 @@
         </div>
 
         <div class="card" id="card-back">
-            <h2>Back Pressure</h2>
+            <h2>Backrest Pressure</h2>
             <div id="back-state" class="status-badge">WAITING...</div>
             <div class="timestamp">Last Update:<br><span id="back-time">--:--:--</span></div>
         </div>
@@ -178,92 +31,53 @@
         </div>
     </div>
 
-    <button class="btn-insights" onclick="toggleInsights()">🔍 Show Insights & Debug</button>
+    <button class="btn-insights" onclick="toggleInsights()">🔍 Show Insights & Diagram</button>
 
     <div class="debug-panel" id="debugPanel">
-        <h2>🛠️ Advanced Insights & Raw Sensor Metrics</h2>
-        <div class="debug-grid">
-            <div class="debug-section">
-                <h3>Seat FSR Values</h3>
-                <div class="debug-data">
-                    Front Left (FL): <span id="raw-seat-fl">--</span><br>
-                    Front Right (FR): <span id="raw-seat-fr">--</span><br>
-                    Back Left (BL): <span id="raw-seat-bl">--</span><br>
-                    Back Right (BR): <span id="raw-seat-br">--</span>
+        <h2>🛠️ Sensor Layout Mapping</h2>
+
+        <div class="chair-container">
+            
+            <div class="chair-backrest">
+                <div class="sensor-node" id="node-back-up" style="width: 85%;">
+                    Upper Back (UP)
+                    <span id="v-back-up">0</span>
+                </div>
+                <div class="sensor-node" id="node-back-low" style="width: 85%;">
+                    Lower Back (LOW)
+                    <span id="v-back-low">0</span>
                 </div>
             </div>
 
-            <div class="debug-section">
-                <h3>Backrest FSR Values</h3>
-                <div class="debug-data">
-                    Upper Back (UP): <span id="raw-back-up">--</span><br>
-                    Lower Back (LOW): <span id="raw-back-low">--</span>
+            <div class="chair-seat">
+                <div class="sensor-node" id="node-seat-bl">
+                    Back Left (BL)
+                    <span id="v-seat-bl">0</span>
+                </div>
+                <div class="sensor-node" id="node-seat-br">
+                    Back Right (BR)
+                    <span id="v-seat-br">0</span>
+                </div>
+                <div class="sensor-node" id="node-seat-fl">
+                    Front Left (FL)
+                    <span id="v-seat-fl">0</span>
+                </div>
+                <div class="sensor-node" id="node-seat-fr">
+                    Front Right (FR)
+                    <span id="v-seat-fr">0</span>
                 </div>
             </div>
 
-            <div class="debug-section">
-                <h3>PIR Motion Sensor</h3>
-                <div class="debug-data">
-                    Movement Detected: <span id="raw-move-pir">--</span>
-                </div>
+            <div class="chair-prop"></div>
+            <div class="chair-base"></div>
+
+            <div class="pir-box" id="node-pir">
+                PIR Sensor Activity:
+                <span id="v-pir">NO MOTION</span>
             </div>
         </div>
     </div>
 
-    <script>
-        const socket = io();
-
-        function toggleInsights() {
-            const panel = document.getElementById('debugPanel');
-            if (panel.style.display === 'none' || panel.style.display === '') {
-                panel.style.display = 'block';
-                document.querySelector('.btn-insights').innerText = "❌ Hide Insights & Debug";
-            } else {
-                panel.style.display = 'none';
-                document.querySelector('.btn-insights').innerText = "🔍 Show Insights & Debug";
-            }
-        }
-
-        socket.on('update_chair', function(data) {
-            let idPrefix = "";
-
-            
-            if (data.topic === "sensors/seat/data") {
-                idPrefix = "seat";
-                document.getElementById('raw-seat-fl').innerText = data.raw_data.fl;
-                document.getElementById('raw-seat-fr').innerText = data.raw_data.fr;
-                document.getElementById('raw-seat-bl').innerText = data.raw_data.bl;
-                document.getElementById('raw-seat-br').innerText = data.raw_data.br;
-            } 
-            else if (data.topic === "sensors/back/data") {
-                idPrefix = "back";
-                document.getElementById('raw-back-up').innerText = data.raw_data.up;
-                document.getElementById('raw-back-low').innerText = data.raw_data.low;
-            } 
-            else if (data.topic === "sensors/movement/data") {
-                idPrefix = "movement";
-                document.getElementById('raw-move-pir').innerText = data.raw_data.movement_detected ? "YES (HIGH)" : "NO (LOW)";
-            }
-
-            // Only update the basic states
-            if (idPrefix !== "") {
-                const stateElement = document.getElementById(`${idPrefix}-state`);
-                const timeElement = document.getElementById(`${idPrefix}-time`);
-
-                stateElement.innerText = data.state;
-                timeElement.innerText = data.time;
-
-                stateElement.classList.remove('state-ok', 'state-warning', 'state-alert');
-
-                if (data.state === "OK") {
-                    stateElement.classList.add('state-ok');
-                } else if (data.state === "WARNING") {
-                    stateElement.classList.add('state-warning');
-                } else if (data.state === "ALERT") {
-                    stateElement.classList.add('state-alert');
-                }
-            }
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

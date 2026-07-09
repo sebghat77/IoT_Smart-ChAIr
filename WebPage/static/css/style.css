@@ -1,0 +1,248 @@
+:root {
+    --bg-color: #f4f6f9;
+    --card-bg: #ffffff;
+    --text-main: #333333;
+    --color-ok: #2ecc71;
+    --color-pre: #f39c12;
+    --color-alert: #e74c3c;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+/* --- Dashboard y Tarjetas de Estado --- */
+.dashboard {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 1000px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 24px;
+    width: 260px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-badge {
+    display: inline-block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin: 15px 0;
+    background-color: #eee;
+    color: #7f8c8d;
+    transition: all 0.3s ease;
+}
+
+.timestamp {
+    font-size: 0.85rem;
+    color: #95a5a6;
+    margin-top: 15px;
+    border-top: 1px solid #ecf0f1;
+    padding-top: 10px;
+}
+
+/* --- Modificadores de Estado Globales --- */
+.state-ok { background-color: rgba(46, 204, 113, 0.2); color: var(--color-ok); }
+.state-warning { background-color: rgba(243, 156, 18, 0.2); color: var(--color-pre); }
+.state-alert { 
+    background-color: rgba(231, 76, 60, 0.2); 
+    color: var(--color-alert); 
+    animation: pulse 1.5s infinite;
+}
+
+/* --- Botón de Despliegue --- */
+.btn-insights {
+    background-color: #34495e;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 20px;
+}
+
+.btn-insights:hover {
+    background-color: #2c3e50;
+}
+
+/* --- Contenedor del Diagrama Técnico --- */
+.debug-panel {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 800px;
+    width: 100%;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+    display: none;
+    text-align: center;
+}
+
+.debug-subtitle {
+    color: #bdc3c7; 
+    font-size: 0.95rem;
+}
+
+.chair-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    margin: 30px auto;
+    width: 340px;
+}
+
+/* Elementos Anatómicos de la Silla */
+.chair-backrest {
+    width: 200px;
+    height: 220px;
+    background-color: #34495e;
+    border: 4px solid #7f8c8d;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    padding: 15px 0;
+    box-sizing: border-box;
+}
+
+.chair-seat {
+    width: 240px;
+    height: 240px;
+    background-color: #34495e;
+    border: 4px solid #7f8c8d;
+    border-radius: 12px 12px 30px 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding: 15px;
+    gap: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+}
+
+.sensor-node {
+    background-color: #1a252f;
+    border: 2px dashed #7f8c8d;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #ffffff;
+    padding: 5px;
+    transition: all 0.3s ease;
+}
+
+.sensor-node span {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #ffffff;
+    margin-top: 2px;
+}
+
+/* Modificadores de Color de los Nodos del Diagrama */
+.node-ok {
+    border-color: var(--color-ok) !important;
+    background-color: rgba(46, 204, 113, 0.15) !important;
+}
+.node-ok span { color: var(--color-ok) !important; }
+
+.node-warning {
+    border-color: var(--color-pre) !important;
+    background-color: rgba(243, 156, 18, 0.15) !important;
+}
+.node-warning span { color: var(--color-pre) !important; }
+
+.node-alert {
+    border-color: var(--color-alert) !important;
+    background-color: rgba(231, 76, 60, 0.2) !important;
+    animation: pulse 1.5s infinite;
+}
+.node-alert span { color: var(--color-alert) !important; }
+
+/* Soporte y Estructura Mecánica */
+.chair-prop {
+    width: 18px;
+    height: 45px;
+    background-color: #7f8c8d;
+    margin-top: -10px;
+}
+
+.chair-base {
+    width: 150px;
+    height: 12px;
+    background-color: #7f8c8d;
+    border-radius: 6px;
+}
+
+.pir-box {
+    margin-top: 15px;
+    background-color: #7f8c8d;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+.pir-box span {
+    display: block;
+    margin-top: 5px; /* Un pequeño margen de separación superior */
+    font-size: 1.1rem;
+}
+
+/* Animación de parpadeo cuando el PIR está en alerta crítica */
+.pir-alert {
+    animation: pulse 1.5s infinite;
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}

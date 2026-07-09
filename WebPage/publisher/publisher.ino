@@ -52,7 +52,7 @@ unsigned long startMovementWarningTime  = 0;    // Time when the movement warnin
 
 // ------- MQTT Configuration -------
 const char* ssid = "Arturo’s iPhone";
-const char* password = "X";
+const char* password = "12345678";
 const char* mqtt_broker = "172.20.10.4"; 
 const int mqtt_port = 1883;
 
