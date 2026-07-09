@@ -3,59 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor MQTT Simple</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <title>Smart ChAIr</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     
     <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --color-ok: #2ecc71;
+            --color-pre: #f39c12;
+            --color-alert: #e74c3c;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
-            text-align: center;
-            padding: 50px;
-        }
-        .container {
-            background-color: white;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        h1 { color: #2c3e50; }
-        .data-box {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2980b9;
-            background-color: #e8f4f8;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            width: 260px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 10px 20px;
             border-radius: 8px;
-            margin-top: 20px;
-            border-left: 5px solid #2980b9;
+            margin: 15px 0;
+            background-color: #eee;
+            color: #7f8c8d;
+            transition: all 0.3s ease;
+        }
+
+        /* Dinamic classes based on the alert state */
+        .state-ok { background-color: rgba(46, 204, 113, 0.2); color: var(--color-ok); }
+        .state-warning { background-color: rgba(243, 156, 18, 0.2); color: var(--color-pre); }
+        .state-alert { 
+            background-color: rgba(231, 76, 60, 0.2); 
+            color: var(--color-alert); 
+            animation: pulse 1.5s infinite;
+        }
+
+        .timestamp {
+            font-size: 0.85rem;
+            color: #95a5a6;
+            margin-top: 15px;
+            border-top: 1px solid #ecf0f1;
+            padding-top: 10px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Monitor de Temperatura</h1>
-        <p>Datos en tiempo real recibidos desde la ESP32:</p>
-        
-        <div id="temperatura-display" class="data-box">
-            Esperando datos...
+    <h1>🪑 Real Time Monitoring - Smart ChAIr</h1>
+
+    <div class="dashboard">
+        <div class="card" id="card-seat">
+            <h2>Seating Pressure</h2>
+            <div id="seat-state" class="status-badge">WAITING...</div>
+            <div class="timestamp">Last Update:<br><span id="seat-time">--:--:--</span></div>
+        </div>
+
+        <div class="card" id="card-back">
+            <h2>Back Pressure</h2>
+            <div id="back-state" class="status-badge">WAITING...</div>
+            <div class="timestamp">Last Update:<br><span id="back-time">--:--:--</span></div>
+        </div>
+
+        <div class="card" id="card-movement">
+            <h2>Leg Movement</h2>
+            <div id="movement-state" class="status-badge">WAITING...</div>
+            <div class="timestamp">Last Update:<br><span id="movement-time">--:--:--</span></div>
         </div>
     </div>
 
     <script>
-        // Conectar con el servidor Flask-SocketIO
         const socket = io();
 
-        // Escuchar el evento 'nuevo_mensaje' que configuramos en Python
-        socket.on('nuevo_mensaje', function(msg) {
-            // Actualizar el contenido del DIV con el mensaje recibido
-            document.getElementById('temperatura-display').innerText = msg.data;
+        // Listen for updates from the server
+        socket.on('update_chair', function(data) {
+            let idPrefix = "";
+
+            // Map the topic to the corresponding element IDs
+            if (data.topic === "sensors/seat/state") idPrefix = "seat";
+            else if (data.topic === "sensors/back/state") idPrefix = "back";
+            else if (data.topic === "sensors/movement/state") idPrefix = "movement";
+
+            if (idPrefix !== "") {
+                const stateElement = document.getElementById(`${idPrefix}-state`);
+                const timeElement = document.getElementById(`${idPrefix}-time`);
+
+                // Update the state and timestamp
+                stateElement.innerText = data.state;
+                timeElement.innerText = data.time;
+
+                // Clean up previous state classes
+                stateElement.classList.remove('state-ok', 'state-warning', 'state-alert');
+
+                // Assign new visual class based on the string received from the sensor
+                if (data.state === "OK") {
+                    stateElement.classList.add('state-ok');
+                } else if (data.state === "WARNING") {
+                    stateElement.classList.add('state-warning');
+                } else if (data.state === "ALERT") {
+                    stateElement.classList.add('state-alert');
+                }
+            }
         });
     </script>
-
 </body>
 </html>
