@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 #define DEBUGGING   // Comment when not debugging
 
@@ -42,9 +43,6 @@ enum alertState {
   WARNING_STATE = 1,
   ALERT_STATE = 2
 };
-alertState seatState     = OK_STATE;
-alertState backState     = OK_STATE;
-alertState movementState = OK_STATE;
 
 #define MIN_WARNING_DURATION 5*1000UL // Minimum duration in milliseconds for a warning to be considered an alert
 unsigned long startSeatWarningTime      = 0;    // Time when the seat warning started
@@ -58,13 +56,31 @@ const char* password = "X";
 const char* mqtt_broker = "172.20.10.4"; 
 const int mqtt_port = 1883;
 
-const char* seat_topic = "sensors/seat/state";
-const char* back_topic = "sensors/back/state";
-const char* movement_topic = "sensors/movement/state";
+const char* seat_topic = "sensors/seat/data";
+const char* back_topic = "sensors/back/data";
+const char* movement_topic = "sensors/movement/data";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 const unsigned long MQTT_PUBLISH_INTERVAL = 2000UL; // Send MQTT messages every 2 seconds
+
+
+
+// -------- RAW Data to Send to MQTT Broker --------
+alertState seatState     = OK_STATE;
+alertState backState     = OK_STATE;
+alertState movementState = OK_STATE;
+
+int seat_FL_val = 0;
+int seat_FR_val = 0;
+int seat_BL_val = 0;
+int seat_BR_val = 0;
+int back_UP_val = 0;
+int back_LOW_val = 0;
+bool pir_val = false;
+
+
+// ----------------------------------------------------
 
 
 /**
@@ -145,13 +161,13 @@ bool areFSRBalanced(int value1, int value2) {
  * @return true if both front and back sensors are balanced, false otherwise.
  */
 bool isSeatPostureOK() {
-  int seat_BL_reading = analogRead(SEAT_FSR_BL);
-  int seat_BR_reading = analogRead(SEAT_FSR_BR);
-  int seat_FL_reading = analogRead(SEAT_FSR_FL);
-  int seat_FR_reading = analogRead(SEAT_FSR_FR);
+  seat_BL_val = analogRead(SEAT_FSR_BL);
+  seat_BR_val = analogRead(SEAT_FSR_BR);
+  seat_FL_val = analogRead(SEAT_FSR_FL);
+  seat_FR_val = analogRead(SEAT_FSR_FR);
 
-  bool frontBalanced = areFSRBalanced(seat_FL_reading, seat_FR_reading);
-  bool backBalanced  = areFSRBalanced(seat_BL_reading, seat_BR_reading);
+  bool frontBalanced = areFSRBalanced(seat_FL_val, seat_FR_val);
+  bool backBalanced  = areFSRBalanced(seat_BL_val, seat_BR_val);
 
   bool seatBalanced = frontBalanced && backBalanced;
 
@@ -159,13 +175,13 @@ bool isSeatPostureOK() {
 
     Serial.println("Seat FSR values:");
     Serial.print("\t- Front Left: ");
-    Serial.println(seat_FL_reading);
+    Serial.println(seat_FL_val);
     Serial.print("\t- Front Right: ");
-    Serial.println(seat_FR_reading);
+    Serial.println(seat_FR_val);
     Serial.print("\t- Back Left: ");
-    Serial.println(seat_BL_reading);
+    Serial.println(seat_BL_val);
     Serial.print("\t- Back Right: ");
-    Serial.println(seat_BR_reading);
+    Serial.println(seat_BR_val);
 
     Serial.println("Seat FSR balance check:");
     Serial.print("\t- Front balanced: ");
@@ -190,11 +206,11 @@ bool isSeatPostureOK() {
  * @return true if both backrest sensors are pressed, false otherwise.
  */
 bool isBackPostureOK() {
-  int back_UP_reading = analogRead(BACK_FSR_UP);
-  int back_LOW_reading = analogRead(BACK_FSR_LOW);
+  back_UP_val = analogRead(BACK_FSR_UP);
+  back_LOW_val = analogRead(BACK_FSR_LOW);
 
-  bool LOW_pressed = back_LOW_reading > FSR_THRESHOLD;
-  bool UP_pressed = back_UP_reading > FSR_THRESHOLD;
+  bool LOW_pressed = back_LOW_val > FSR_THRESHOLD;
+  bool UP_pressed = back_UP_val > FSR_THRESHOLD;
 
   bool back_pressed = LOW_pressed && UP_pressed;
 
@@ -202,9 +218,9 @@ bool isBackPostureOK() {
 
     Serial.println("Backrest FSR values:");
     Serial.print("\t- Back Upper: ");
-    Serial.println(back_UP_reading);
+    Serial.println(back_UP_val);
     Serial.print("\t- Back Lower: ");
-    Serial.println(back_LOW_reading);
+    Serial.println(back_LOW_val);
 
     Serial.print("\t- Back pressed: ");
     Serial.println(back_pressed ? "TRUE" : "FALSE");
@@ -224,7 +240,8 @@ bool isBackPostureOK() {
  * @return true if the PIR sensor does not detect movement (calm state), false otherwise (nervous state).
  */
 bool isMovementOK() {
-  bool movementDetected = digitalRead(PIR_PIN) == HIGH;
+  pir_val = digitalRead(PIR_PIN);
+  bool movementDetected = pir_val == HIGH;
 
   #ifdef DEBUGGING
 
@@ -294,9 +311,9 @@ int countAlerts() {
   unsigned long currentTime = millis();
   int totalAlerts = 0;
 
-  backState     = updateAlertState(isBackPostureOK(), startBackAlertTime,      currentTime);
-  seatState     = updateAlertState(isSeatPostureOK(), startSeatAlertTime,      currentTime);
-  movementState = updateAlertState(isMovementOK(),    startMovementAlertTime,  currentTime);
+  backState     = updateAlertState(isBackPostureOK(), startBackWarningTime,      currentTime);
+  seatState     = updateAlertState(isSeatPostureOK(), startSeatWarningTime,      currentTime);
+  movementState = updateAlertState(isMovementOK(),    startMovementWarningTime,  currentTime);
 
   if (backState == ALERT_STATE)     totalAlerts++;
   if (seatState == ALERT_STATE)     totalAlerts++;
@@ -392,20 +409,39 @@ void processNumberOfAlerts(int numAlerts) {
 /**
  * @brief Publishes the current alert states to the MQTT broker.
  */
-void publishAlertStates() {
+void publishData() {
 
   static unsigned long lastPublishTime = 0;
 
   if (millis() - lastPublishTime >= MQTT_PUBLISH_INTERVAL) {
     lastPublishTime = millis();
 
-    String seatStateStr = alertStateToString(seatState);
-    String backStateStr = alertStateToString(backState);
-    String movementStateStr = alertStateToString(movementState);
+    char jsonBuffer[256];
 
-    client.publish(seat_topic, seatStateStr.c_str());
-    client.publish(back_topic, backStateStr.c_str());
-    client.publish(movement_topic, movementStateStr.c_str());
+    // Seat Data
+    StaticJsonDocument<200> docSeat;
+    docSeat["state"] = alertStateToString(seatState);
+    docSeat["fl"] = seat_FL_val;
+    docSeat["fr"] = seat_FR_val;
+    docSeat["bl"] = seat_BL_val;
+    docSeat["br"] = seat_BR_val;
+    serializeJson(docSeat, jsonBuffer);
+    client.publish(seat_topic, jsonBuffer);
+
+    // Backrest Data
+    StaticJsonDocument<150> docBack;
+    docBack["state"] = alertStateToString(backState);
+    docBack["up"] = back_UP_val;
+    docBack["low"] = back_LOW_val;
+    serializeJson(docBack, jsonBuffer);
+    client.publish(back_topic, jsonBuffer);
+
+    // Movement Data
+    StaticJsonDocument<100> docMove;
+    docMove["state"] = alertStateToString(movementState);
+    docMove["movement_detected"] = pir_val;
+    serializeJson(docMove, jsonBuffer);
+    client.publish(movement_topic, jsonBuffer);
   }
 }
 
@@ -423,7 +459,7 @@ void setup() {
 
   Serial.println("Waiting for sensors to stabilize...");
   delay(WARMUP_TIME);
-  Serial.println("Smart Chair FSR Logic Started");
+  Serial.println("Smart ChAIr Logic Started");
 }
 
 
@@ -437,7 +473,7 @@ void loop() {
 
   int numAlerts = countAlerts();
   processNumberOfAlerts(numAlerts);
-  publishAlertStates();
+  publishData();
   #ifdef DEBUGGING
     Serial.println("===============================");
   #endif

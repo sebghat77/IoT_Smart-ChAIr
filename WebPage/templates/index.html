@@ -39,6 +39,7 @@
             justify-content: center;
             max-width: 1000px;
             width: 100%;
+            margin-bottom: 30px;
         }
 
         .card {
@@ -75,7 +76,6 @@
             transition: all 0.3s ease;
         }
 
-        /* Dinamic classes based on the alert state */
         .state-ok { background-color: rgba(46, 204, 113, 0.2); color: var(--color-ok); }
         .state-warning { background-color: rgba(243, 156, 18, 0.2); color: var(--color-pre); }
         .state-alert { 
@@ -90,6 +90,61 @@
             margin-top: 15px;
             border-top: 1px solid #ecf0f1;
             padding-top: 10px;
+        }
+
+        /* --- Estilos del Botón de Insights y Panel de Debug --- */
+        .btn-insights {
+            background-color: #34495e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .btn-insights:hover {
+            background-color: #2c3e50;
+        }
+
+        .debug-panel {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+            font-family: 'Courier New', Courier, monospace;
+            display: none; /* Oculto por defecto */
+        }
+
+        .debug-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .debug-section {
+            background-color: #34495e;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .debug-section h3 {
+            margin-top: 0;
+            color: #f1c40f;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #5d6d7e;
+            padding-bottom: 5px;
+        }
+
+        .debug-data {
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
 
         @keyframes pulse {
@@ -123,30 +178,83 @@
         </div>
     </div>
 
+    <button class="btn-insights" onclick="toggleInsights()">🔍 Show Insights & Debug</button>
+
+    <div class="debug-panel" id="debugPanel">
+        <h2>🛠️ Advanced Insights & Raw Sensor Metrics</h2>
+        <div class="debug-grid">
+            <div class="debug-section">
+                <h3>Seat FSR Values</h3>
+                <div class="debug-data">
+                    Front Left (FL): <span id="raw-seat-fl">--</span><br>
+                    Front Right (FR): <span id="raw-seat-fr">--</span><br>
+                    Back Left (BL): <span id="raw-seat-bl">--</span><br>
+                    Back Right (BR): <span id="raw-seat-br">--</span>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <h3>Backrest FSR Values</h3>
+                <div class="debug-data">
+                    Upper Back (UP): <span id="raw-back-up">--</span><br>
+                    Lower Back (LOW): <span id="raw-back-low">--</span>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <h3>PIR Motion Sensor</h3>
+                <div class="debug-data">
+                    Movement Detected: <span id="raw-move-pir">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const socket = io();
 
-        // Listen for updates from the server
+        function toggleInsights() {
+            const panel = document.getElementById('debugPanel');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                document.querySelector('.btn-insights').innerText = "❌ Hide Insights & Debug";
+            } else {
+                panel.style.display = 'none';
+                document.querySelector('.btn-insights').innerText = "🔍 Show Insights & Debug";
+            }
+        }
+
         socket.on('update_chair', function(data) {
             let idPrefix = "";
 
-            // Map the topic to the corresponding element IDs
-            if (data.topic === "sensors/seat/state") idPrefix = "seat";
-            else if (data.topic === "sensors/back/state") idPrefix = "back";
-            else if (data.topic === "sensors/movement/state") idPrefix = "movement";
+            
+            if (data.topic === "sensors/seat/data") {
+                idPrefix = "seat";
+                document.getElementById('raw-seat-fl').innerText = data.raw_data.fl;
+                document.getElementById('raw-seat-fr').innerText = data.raw_data.fr;
+                document.getElementById('raw-seat-bl').innerText = data.raw_data.bl;
+                document.getElementById('raw-seat-br').innerText = data.raw_data.br;
+            } 
+            else if (data.topic === "sensors/back/data") {
+                idPrefix = "back";
+                document.getElementById('raw-back-up').innerText = data.raw_data.up;
+                document.getElementById('raw-back-low').innerText = data.raw_data.low;
+            } 
+            else if (data.topic === "sensors/movement/data") {
+                idPrefix = "movement";
+                document.getElementById('raw-move-pir').innerText = data.raw_data.movement_detected ? "YES (HIGH)" : "NO (LOW)";
+            }
 
+            // Only update the basic states
             if (idPrefix !== "") {
                 const stateElement = document.getElementById(`${idPrefix}-state`);
                 const timeElement = document.getElementById(`${idPrefix}-time`);
 
-                // Update the state and timestamp
                 stateElement.innerText = data.state;
                 timeElement.innerText = data.time;
 
-                // Clean up previous state classes
                 stateElement.classList.remove('state-ok', 'state-warning', 'state-alert');
 
-                // Assign new visual class based on the string received from the sensor
                 if (data.state === "OK") {
                     stateElement.classList.add('state-ok');
                 } else if (data.state === "WARNING") {
