@@ -422,7 +422,7 @@ bool isObjectDetected(const VL53L4CD_Result_t &results) {
  * @return true if the object is too close, false otherwise.
  */
 bool isObjectTooClose(float distance) {
-  return distance < TOO_CLOSE_THRESHOLD;
+  return (distance*10) < TOO_CLOSE_THRESHOLD;
 }
 
 
@@ -448,6 +448,8 @@ float getDistanceInCm(VL53L4CD &sensor) {
     if (isObjectDetected(results)) {
       distance_cm = (float)results.distance_mm / 10.0; // Convert mm to cm
       if (isObjectTooClose(distance_cm)) distance_cm = OBJECT_TOO_CLOSE;
+    }else{
+      distance_cm = NO_OBJECT;
     }
 
     sensor.VL53L4CD_ClearInterrupt();
