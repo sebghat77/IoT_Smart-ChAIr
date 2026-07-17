@@ -137,7 +137,7 @@ The physical sensor matrix is directly embedded into the chair's structure, allo
 * **Backrest Array:** Time-of-Flight (ToF) and pressure sensors monitor upper-body curvature and lumbar engagement.
 
 <p align="center">
-  <img src="WebPage/static/Prototype.png" width="450" alt="Smart-ChAIr Physical Prototype Setup">
+  <img src="Results/ChAIr.jpg" width="450" alt="Smart-ChAIr Physical Prototype Setup">
   <br><em>Figure 1: Complete physical prototype integration mapping telemetry live to the workstation dashboard.</em>
 </p>
 
@@ -145,28 +145,15 @@ The physical sensor matrix is directly embedded into the chair's structure, allo
 The Flask web server receives data via the local MQTT broker and visually updates the user's ergonomic health quadrants dynamically:
 
 <p align="center">
-  <img src="WebPage/static/Dashboard.png" width="600" alt="Real Time Monitoring Dashboard">
+  <img src="Results/Dashboard.png" width="600" alt="Real Time Monitoring Dashboard">
   <br><em>Figure 2: Real-time status tracker indicating warning flags on upper body metrics.</em>
 </p>
 
-* **Seating & Backrest Pressure (`OK`):** Shows properly balanced pelvic weight profile and lower lumbar posture.
-* **Backrest Distance (`WARNING`):** Active warning indicating the user is leaning away or slouching out of the optimal alignment.
-* **Leg Movement (`WARNING`):** Detects excessive static behavior or crossed legs over time based on the active telemetry changes.
 
 ### 3. Sensor Layout Mapping & Insights
 By selecting **"Show Insights & Diagram"**, the interface exposes the exact mathematical distribution of the physical sensor network:
 
 <p align="center">
-  <img src="WebPage/static/Insights.png" width="600" alt="Sensor Layout Mapping Grid">
+  <img src="Results/Insights.png" width="600" alt="Sensor Layout Mapping Grid">
   <br><em>Figure 3: Graphical overlay of individual sensor nodes mapping live numerical metrics.</em>
 </p>
-
-| Sensor Region | Target Variable | Real-Time Live Metric | Current Status / Threshold |
-| --- | --- | --- | --- |
-| **Upper Backrest** | Pressure (FSR) | `655` | Optimal (Within Range) |
-| **Upper Backrest** | Distance (ToF) | `163 cm` | Warning (Out of Range) |
-| **Lower Backrest** | Pressure (FSR) | `757` | Optimal (Within Range) |
-| **Lower Backrest** | Distance (ToF) | `185 cm` | Warning (Out of Range) |
-| **Seat Base (Back)** | Left (BL) / Right (BR) | `624` / `717` | Pelvic weight balance analytics |
-| **Seat Base (Front)**| Left (FL) / Right (FR) | `407` / `589` | Quadricep pressure distribution |
-| **Underneath Base** | Motion Tracking (PIR)| `MOTION DETECTED` | Active user presence tracking |
