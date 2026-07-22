@@ -16,6 +16,18 @@ If a poor sitting posture is detected and sustained for a specific threshold (5 
 
 ---
 
+## 👨‍💻 My Contribution
+
+as a member of the development team, I contributed to the overall system design and implementation of the Smart-ChAIR project. My main contributions included:
+
+- Contributed to the overall concept and posture detection logic using FSR, ToF, and PIR sensors.
+- Implemented, tested, and calibrated the FSR sensors on the ESP32.
+- Integrated and combined firmware modules developed by different team members.
+- Developed and tested the buzzer alert functionality.
+- Prepared the complete Bill of Materials (BOM) for the project.
+- Participated in hardware integration, testing, debugging, and system validation.
+
+  ---
 ## 🛠️ Hardware & Components
 
 The chair ecosystem is divided into data capture modules (*Chair*) and alert stations (*Desktop Station*) utilizing the following components:
