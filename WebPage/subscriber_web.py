@@ -1,11 +1,13 @@
 import datetime
 import json
+import os
+import secrets
 import paho.mqtt.client as mqtt
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'intelligent_chair_secret_key_abc123'
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY') or secrets.token_hex(32)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 BROKER = "localhost"
