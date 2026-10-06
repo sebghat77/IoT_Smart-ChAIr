@@ -2,6 +2,19 @@
 
 ### Privacy-Preserving Posture Monitoring System
 
+<p>
+  <img alt="ESP32" src="https://img.shields.io/badge/ESP32-E7352C?logo=espressif&logoColor=white">
+  <img alt="Arduino" src="https://img.shields.io/badge/Arduino%20%2F%20C%2B%2B-00878F?logo=arduino&logoColor=white">
+  <img alt="MQTT" src="https://img.shields.io/badge/MQTT-660066?logo=mqtt&logoColor=white">
+  <img alt="Eclipse Mosquitto" src="https://img.shields.io/badge/Mosquitto-3C5280?logo=eclipsemosquitto&logoColor=white">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white">
+  <img alt="Flask" src="https://img.shields.io/badge/Flask-000000?logo=flask&logoColor=white">
+  <img alt="Socket.IO" src="https://img.shields.io/badge/Socket.IO-010101?logo=socketdotio&logoColor=white">
+  <img alt="HTML5" src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white">
+  <img alt="CSS3" src="https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white">
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black">
+</p>
+
 **Internet of Things — Summer Term 2026**
 
 **Developed by:** Michael Breyer, Sebghatullah Yarzada, Arturo Olivares, Reza Falahatkar, and Atena Mahrooghi.
@@ -18,7 +31,7 @@ If a poor sitting posture is detected and sustained for a specific threshold (5 
 
 ## 👨‍💻 My Contribution
 
-as a member of the development team, I contributed to the overall system design and implementation of the Smart-ChAIR project. My main contributions included:
+As a member of the development team, I contributed to the overall system design and implementation of the Smart-ChAIR project. My main contributions included:
 
 - Contributed to the overall concept and posture detection logic using FSR, ToF, and PIR sensors.
 - Implemented, tested, and calibrated the FSR sensors on the ESP32.
@@ -44,7 +57,7 @@ The chair ecosystem is divided into data capture modules (*Chair*) and alert sta
 
 The communication core of the Smart-ChAIr relies entirely on a lightweight, publish-subscribe network driven by the MQTT (Message Queuing Telemetry Transport) protocol, following a specific data flow:
 
-1. **Data Encoding (JSON Payload)**: The ESP32 microcontroller aggregates the raw readings from each physical sensors (FSR, ToF, and PIR) and packages the information of each sensor into a single structured, human-readable JSON string. This payload guarantees modular data parsing on the receiver end.
+1. **Data Encoding (JSON Payload)**: The ESP32 microcontroller aggregates the raw readings from the physical sensors (FSR, ToF, and PIR) and packages the sensor readings into a structured JSON payload. This payload guarantees modular data parsing on the receiver end.
 2. **Local Broker Deployment (Eclipse Mosquitto)**: The JSON payload is published from the hardware node over Wi-Fi directly to a local MQTT network broker running an instance of Eclipse Mosquitto hosted on the host computer.
 3. **Backend Python Subscription**: The `subscriber_web.py` script utilizes an MQTT client framework to establish a persistent connection with the Mosquitto server. It subscribes to the specific data topics emitted by the chair, continuously intercepts incoming JSON strings, unpacks them asynchronously, and feeds the live metrics directly into the frontend user dashboard interface.
 
@@ -86,7 +99,7 @@ The project directory is structured as follows:
 
 ## ⚙️ Posture Notification Logic
 
-The system dynamically continuous-checks the user's status and reacts based on thresholds:
+The system continuously checks the user's posture state and reacts based on thresholds:
 
 | State | Activation Condition | System Response |
 | --- | --- | --- |
