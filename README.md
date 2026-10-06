@@ -86,7 +86,6 @@ The project directory is structured as follows:
 │   └── Combine.ino             # Full sensor array integration on the main chair board.
 │
 └── 📂 WebPage                  # Web ecosystem, API, and Graphical User Interface (Dashboard).
-    ├── .venv/                  # Isolated Python virtual environment.
     ├── requirements.txt        # Backend dependencies and required libraries.
     ├── publisher.ino           # ESP32 production firmware publishing sensor payloads.
     ├── publisher.py            # Local python script that simulates the ESP32 messages (for testing purposes).
